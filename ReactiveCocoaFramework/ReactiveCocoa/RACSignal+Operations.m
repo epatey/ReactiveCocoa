@@ -216,7 +216,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 
 + (RACSignal *)concat:(id<NSFastEnumeration>)streams {
 	return [super concat:streams];
-}
+			}
 
 #pragma clang diagnostic pop
 
@@ -230,7 +230,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 			return [self map:^(id x) {
 				running = block(running, x);
 				return running;
-			}];
+		}];
 		}]
 		setNameWithFormat:@"[%@] -scanWithStart: %@ reduce:", self.name, [startingValue rac_description]];
 }
@@ -241,7 +241,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 
 - (RACSignal *)distinctUntilChanged {
 	id unique = [[NSObject alloc] init];
-
+	
 	return [[RACSignal
 		defer:^{
 			__block id lastValue = unique;
@@ -361,7 +361,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 
 - (RACSignal *)doFinished:(void (^)(void))block {
 	NSCParameterAssert(block != NULL);
-	
+
 	return [[[self
 		doError:^(NSError *error) {
 			block();
@@ -370,7 +370,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 			block();
 		}]
 		setNameWithFormat:@"[%@] -doFinished:", self.name];
-}
+			}
 
 - (RACSignal *)throttleDiscardingEarliest:(NSTimeInterval)interval {
 	NSCParameterAssert(interval >= 0);
@@ -381,7 +381,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 		}]
 		flatten:1 withPolicy:RACSignalFlattenPolicyDisposeEarliest]
 		setNameWithFormat:@"[%@] -throttleDiscardingEarliest: %f", self.name, (double)interval];
-}
+				}
 
 - (RACSignal *)throttleDiscardingLatest:(NSTimeInterval)interval {
 	NSCParameterAssert(interval >= 0);
@@ -536,22 +536,22 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 			[self subscribeSavingDisposable:^(RACDisposable *disposable) {
 				[subscriber.disposable addDisposable:disposable];
 			} next:^(id x) {
-				[valuesTaken addObject:x ?: RACTupleNil.tupleNil];
-				
-				while (valuesTaken.count > count) {
-					[valuesTaken removeObjectAtIndex:0];
-				}
-			} error:^(NSError *error) {
-				[subscriber sendError:error];
-			} completed:^{
-				for (id value in valuesTaken) {
+			[valuesTaken addObject:x ? : RACTupleNil.tupleNil];
+			
+			while (valuesTaken.count > count) {
+				[valuesTaken removeObjectAtIndex:0];
+			}
+		} error:^(NSError *error) {
+			[subscriber sendError:error];
+		} completed:^{
+			for (id value in valuesTaken) {
 					[subscriber sendNext:(value == RACTupleNil.tupleNil ? nil : value)];
 
 					if (subscriber.disposable.disposed) return;
-				}
-				
-				[subscriber sendCompleted];
-			}];
+			}
+			
+			[subscriber sendCompleted];
+		}];
 		}]
 		setNameWithFormat:@"[%@] -takeLast: %lu", self.name, (unsigned long)count];
 }
@@ -680,7 +680,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 	}
 
 	return [[copiedSignals.rac_signal flatten] setNameWithFormat:@"+merge: %@", copiedSignals];
-}
+			}
 
 - (RACSignal *)flatten:(NSUInteger)maxConcurrent withPolicy:(RACSignalFlattenPolicy)policy {
 	return [[RACSignal create:^(id<RACSubscriber> subscriber) {
@@ -719,7 +719,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 		// This array should only be used while synchronized on `subscriber`.
 		NSMutableArray *queuedSignals = nil;
 		if (policy == RACSignalFlattenPolicyQueue) queuedSignals = [NSMutableArray array];
-
+		
 		recur = subscribeToSignal = ^(RACSignal *signal) {
 			RACSerialDisposable *serialDisposable = [[RACSerialDisposable alloc] init];
 
@@ -764,12 +764,12 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 				if (maxConcurrent != RACSignalUnlimitedConcurrentSubscriptions && activeDisposables.count >= maxConcurrent) {
 					switch (policy) {
 						case RACSignalFlattenPolicyQueue: {
-							[queuedSignals addObject:signal];
+					[queuedSignals addObject:signal];
 
-							// If we need to wait, skip subscribing to this
-							// signal.
-							return;
-						}
+					// If we need to wait, skip subscribing to this
+					// signal.
+					return;
+				}
 
 						case RACSignalFlattenPolicyDisposeEarliest: {
 							RACDisposable *disposable = activeDisposables[0];
@@ -934,8 +934,8 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 		} next:^(id _) {
 			[subscriber sendCompleted];
 		} error:nil completed:^{
-			[subscriber sendCompleted];
-		}];
+				[subscriber sendCompleted];
+			}];
 
 		[self subscribe:subscriber];
 	}] setNameWithFormat:@"[%@] -takeUntil: %@", self.name, signalTrigger];
@@ -1125,7 +1125,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 				// subscription.
 				inflightSubscription = [RACReplaySubject subject];
 				underlyingDisposable = [self subscribe:inflightSubscription];
-			}
+}
 
 			[inflightSubscription subscribe:subscriber];
 
@@ -1141,7 +1141,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 					// underlying subscription.
 					[underlyingDisposable dispose];
 					underlyingDisposable = nil;
-				}
+}
 			}]];
 		}]
 		setNameWithFormat:@"[%@] -shareWhileActive", self.name];
@@ -1193,6 +1193,47 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 	}] setNameWithFormat:@"[%@] -subscribeOn: %@", self.name, scheduler];
 }
 
+- (RACSignal *)deliverOnMainThread
+{
+	__block volatile int32_t queueLength = 0;
+	return [[RACSignal createSignal:^(id<RACSubscriber> subscriber) {
+		return [self subscribeNext:^(id x) {
+			int32_t queued = OSAtomicIncrement32Barrier(&queueLength);
+			if ([NSThread isMainThread] && (queued == 1)) {
+				[subscriber sendNext:x];
+				OSAtomicDecrement32(&queueLength);
+			} else {
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[subscriber sendNext:x];
+					OSAtomicDecrement32(&queueLength);
+				});
+			}
+		} error:^(NSError *error) {
+			int32_t queued = OSAtomicIncrement32Barrier(&queueLength);
+			if ([NSThread isMainThread] && (queued == 1)) {
+				[subscriber sendError:error];
+				OSAtomicDecrement32(&queueLength);
+			} else {
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[subscriber sendError:error];
+					OSAtomicDecrement32(&queueLength);
+				});
+			}
+		} completed:^{
+			int32_t queued = OSAtomicIncrement32Barrier(&queueLength);
+			if ([NSThread isMainThread] && (queued == 1)) {
+				[subscriber sendCompleted];
+				OSAtomicDecrement32(&queueLength);
+			} else {
+				dispatch_async(dispatch_get_main_queue(), ^{
+					[subscriber sendCompleted];
+					OSAtomicDecrement32(&queueLength);
+				});
+			}
+		}];
+	}] setNameWithFormat:@"[%@] -deliverOnMainThread", self.name];
+}
+
 - (RACSignal *)retry:(NSUInteger)retryCount {
 	return [[RACSignal defer:^{
 		RACSignalGenerator *generator = [RACDynamicSignalGenerator generatorWithReflexiveBlock:^(NSNumber *currentRetryCount, RACSignalGenerator *generator) {
@@ -1203,7 +1244,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 					// We've retried enough times, so let the error propagate.
 					return [RACSignal error:error];
 				}
-			}];
+		}];
 		}];
 
 		return [generator signalWithValue:@0];
@@ -1317,7 +1358,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 	return [[self map:^(RACTuple *tuple) {
 		NSCAssert([tuple isKindOfClass:RACTuple.class], @"-and must only be used on a signal of RACTuples of NSNumbers. Instead, received: %@", tuple);
 		NSCAssert(tuple.count > 0, @"-and must only be used on a signal of RACTuples of NSNumbers, with at least 1 value in the tuple");
-
+		
 		for (NSNumber *number in tuple) {
 			NSCAssert([number isKindOfClass:NSNumber.class], @"-and must only be used on a signal of RACTuples of NSNumbers. Instead, tuple contains a non-NSNumber value: %@", tuple);
 			
@@ -1338,7 +1379,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 
 			if (number.boolValue) return @YES;
 		}
-
+			
 		return @NO;
 	}] setNameWithFormat:@"[%@] -or", self.name];
 }
@@ -1404,7 +1445,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 - (RACSignal *)finally:(void (^)(void))block {
 	return [self doFinished:block];
 }
-
+	
 - (RACSignal *)flatten:(NSUInteger)maxConcurrent {
 	return [self flatten:maxConcurrent withPolicy:RACSignalFlattenPolicyQueue];
 }
@@ -1416,36 +1457,36 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 - (RACSignal *)takeWhileBlock:(BOOL (^)(id x))predicate {
 	return [super takeWhileBlock:predicate];
 }
-
+		
 - (RACSignal *)skipUntilBlock:(BOOL (^)(id x))predicate {
 	return [super skipUntilBlock:predicate];
 }
-
+		
 - (RACSignal *)skipWhileBlock:(BOOL (^)(id x))predicate {
 	return [super skipWhileBlock:predicate];
 }
-
+				
 - (RACSignal *)any {	
 	return [[self any:^(id x) {
 		return YES;
 	}] setNameWithFormat:@"[%@] -any", self.name];
-}
-
+			}
+			
 - (RACSignal *)any:(BOOL (^)(id object))predicateBlock {
 	NSCParameterAssert(predicateBlock != NULL);
-	
+			
 	return [[[self materialize] bind:^{
 		return ^(RACEvent *event, BOOL *stop) {
 			if (event.finished) {
 				*stop = YES;
 				return [RACSignal return:@NO];
 			}
-			
+				
 			if (predicateBlock(event.value)) {
 				*stop = YES;
 				return [RACSignal return:@YES];
 			}
-
+				
 			return [RACSignal empty];
 		};
 	}] setNameWithFormat:@"[%@] -any:", self.name];
@@ -1453,18 +1494,18 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 
 - (RACSignal *)all:(BOOL (^)(id object))predicateBlock {
 	NSCParameterAssert(predicateBlock != NULL);
-	
+		
 	return [[[self materialize] bind:^{
 		return ^(RACEvent *event, BOOL *stop) {
 			if (event.eventType == RACEventTypeCompleted) {
 				*stop = YES;
 				return [RACSignal return:@YES];
 			}
-			
+
 			if (event.eventType == RACEventTypeError || !predicateBlock(event.value)) {
 				*stop = YES;
 				return [RACSignal return:@NO];
-			}
+				}
 
 			return [RACSignal empty];
 		};
@@ -1492,7 +1533,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 					[subscriber sendNext:groupSubject];
 				}
 			}
-
+	
 			[groupSubject sendNext:(transformBlock != NULL ? transformBlock(x) : x)];
 		} error:^(NSError *error) {
 			[subscriber sendError:error];
@@ -1503,15 +1544,15 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 		}];
 	}] setNameWithFormat:@"[%@] -groupBy:transform:", self.name];
 }
-
+		
 - (RACSignal *)groupBy:(id<NSCopying> (^)(id object))keyBlock {
 	return [[self groupBy:keyBlock transform:nil] setNameWithFormat:@"[%@] -groupBy:", self.name];
 }
-
+		
 - (RACSignal *)aggregateWithStartFactory:(id (^)(void))startFactory reduce:(id (^)(id running, id next))reduceBlock {
 	return [RACSignal defer:^{
 		return [self aggregateWithStart:startFactory() reduce:reduceBlock];
-	}];
+		}];
 }
 
 - (RACSignal *)then:(RACSignal * (^)(void))block {
@@ -1597,7 +1638,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 				} else {
 					removeDisposable = YES;
 				}
-			}
+}
 
 			if (removeDisposable) [subscriber.disposable removeDisposable:finishedDisposable];
 		};
@@ -1605,7 +1646,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 		void (^addSignal)(RACSignal *) = ^(RACSignal *signal) {
 			@synchronized (signals) {
 				[signals addObject:signal];
-			}
+}
 
 			RACSerialDisposable *innerDisposable = [[RACSerialDisposable alloc] init];
 			[subscriber.disposable addDisposable:innerDisposable];
@@ -1619,7 +1660,7 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 			} completed:^{
 				@autoreleasepool {
 					completeSignal(signal, innerDisposable);
-				}
+}
 			}];
 		};
 
@@ -1646,8 +1687,8 @@ const NSUInteger RACSignalUnlimitedConcurrentSubscriptions = 0;
 				@autoreleasepool {
 					completeSignal(self, selfDisposable);
 				}
-			}];
-		}
+	}];
+}
 	}] setNameWithFormat:@"[%@] -bind:", self.name];
 }
 

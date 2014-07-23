@@ -776,6 +776,20 @@ typedef enum : NSUInteger {
 /// want to receive the signal's events on `scheduler`, use -deliverOn: instead.
 - (RACSignal *)subscribeOn:(RACScheduler *)scheduler;
 
+/// Creates and returns a signal that delivers its events on the main thread.
+/// If events are already being sent on the main thread, they may be passed on
+/// without delay. An event will instead be queued for later delivery on the main
+/// thread if sent on another thread, or if a previous event is already being
+/// processed, or has been queued.
+///
+/// Any side effects of the receiver will still be performed on the original
+/// thread.
+///
+/// This can be used when a signal will cause UI updates, to avoid potential
+/// flicker caused by delayed delivery of events, such as the first event from
+/// a RACObserve at view instantiation.
+- (RACSignal *)deliverOnMainThread;
+
 /// Resubscribes to the receiving signal if an error occurs, up until it has
 /// retried the given number of times.
 ///
