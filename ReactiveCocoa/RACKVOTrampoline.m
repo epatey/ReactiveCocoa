@@ -45,7 +45,9 @@
 	RACKVOProxy *proxy = RACKVOProxy.instance;
 	[proxy addObserver:self forContext:(__bridge void *)self];
     
-	[self.target addObserver:proxy forKeyPath:self.keyPath options:options context:(__bridge void *)self];
+    @synchronized(target) {
+		[self.target addObserver:proxy forKeyPath:self.keyPath options:options context:(__bridge void *)self];
+	}
 	[self.target.rac_deallocDisposable addDisposable:self];
 	[self.observer.rac_deallocDisposable addDisposable:self];
 
@@ -78,7 +80,9 @@
 	RACKVOProxy *proxy = RACKVOProxy.instance;
 	[proxy removeObserver:self forContext:(__bridge void *)self];
     
-	[target removeObserver:proxy forKeyPath:self.keyPath context:(__bridge void *)self];
+    @synchronized(target) {
+		[target removeObserver:proxy forKeyPath:self.keyPath context:(__bridge void *)self];
+	}
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
