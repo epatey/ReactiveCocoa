@@ -124,7 +124,7 @@ static CFMutableArrayRef RACCreateDisposablesArray(void) {
 
 - (void)addDisposable:(RACDisposable *)disposable {
 	NSCParameterAssert(disposable != self);
-	if (disposable == nil) return;
+	if (disposable == nil || disposable.isDisposed) return;
 
 	BOOL shouldDispose = NO;
 
