@@ -7,8 +7,12 @@
 //
 
 #import "RACKVOProxy.h"
+#import <libkern/OSAtomic.h>
 
-@interface RACKVOProxy()
+@interface RACKVOProxy() {
+    OSSpinLock _spinLock;
+}
+
 @property(strong, nonatomic, readonly) NSMapTable *trampolines;
 @end
 
@@ -20,7 +24,7 @@
     dispatch_once(&onceToken, ^{
         proxy = [[RACKVOProxy alloc] init];
     });
-    
+
     return proxy;
 }
 
@@ -33,24 +37,24 @@
 
 - (void)addObserver:(NSObject *)observer forContext:(void *)context {
     NSValue *valueContext = [NSValue valueWithPointer:context];
-    @synchronized (self) {
-        [self.trampolines setObject:observer forKey:valueContext];
-    }
+    OSSpinLockLock(&_spinLock);
+    [self.trampolines setObject:observer forKey:valueContext];
+    OSSpinLockUnlock(&_spinLock);
 }
 
 - (void)removeObserver:(NSObject *)observer forContext:(void *)context {
     NSValue *valueContext = [NSValue valueWithPointer:context];
-    @synchronized (self) {
-        [self.trampolines removeObjectForKey:valueContext];
-    }
+    OSSpinLockLock(&_spinLock);
+    [self.trampolines removeObjectForKey:valueContext];
+    OSSpinLockUnlock(&_spinLock);
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     NSValue *valueContext = [NSValue valueWithPointer:context];
     NSObject *trueObserver;
-    @synchronized (self) {
-        trueObserver = [self.trampolines objectForKey:valueContext];
-    }
+    OSSpinLockLock(&_spinLock);
+    trueObserver = [self.trampolines objectForKey:valueContext];
+    OSSpinLockUnlock(&_spinLock);
     if (trueObserver) {
         [trueObserver observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
